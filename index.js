@@ -1,5 +1,6 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import { createServer } from './server.js';
 
 const argv = yargs(hideBin(process.argv))
   .option('port', {
@@ -26,3 +27,5 @@ if (!argv.port || !argv.origin) {
   );
   process.exit(1);
 }
+
+createServer(argv.port, argv.origin);
