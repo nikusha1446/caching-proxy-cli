@@ -9,13 +9,30 @@ function createServer(port, origin) {
 
   app.use(express.json());
 
+  app.delete('/cache', (req, res) => {
+    const keys = cache.keys();
+    if (keys.length > 0) {
+      cache.flushAll();
+      res.json({
+        message: 'Cache cleared successfully.',
+        removedItems: keys.length,
+      });
+    } else {
+      console.log('Cache is already empty.');
+      res.json({
+        message: 'Cache is already empty.',
+        removedItems: 0,
+      });
+    }
+  });
+
   app.use(async (req, res) => {
     const cleanOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
 
     const cacheKey = `${req.method}:${req.originalUrl}`;
     const cachedResponse = cache.get(cacheKey);
 
-    if(cachedResponse) {
+    if (cachedResponse) {
       res.set('X-Cache', 'HIT');
       return res.status(cachedResponse.status).json(cachedResponse.data);
     }
@@ -35,7 +52,7 @@ function createServer(port, origin) {
 
       cache.set(cacheKey, {
         status: response.status,
-        data: response.data
+        data: response.data,
       });
 
       res.set('X-Cache', 'MISS');
